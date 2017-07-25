@@ -224,18 +224,43 @@ var D_component = (function() {
 					return self.noreactive_data[i];
 				},
 				set: function(v) {
+					if(self.noreactive_data[i].constructor.name === "Array") {
+						self.noreactive_data[i] = [];
 
-					self.noreactive_data[i] = v;
+						for(var j in v) {
+
+							if(typeof v[j] !== 'function') {
+								self.noreactive_data[i].push(v[j]);
+							}
+
+						}
+					}
+					else {
+						self.noreactive_data[i] = v;
+					}
+
 					if(typeof self.$directives[i]!=='undefined') {
 						self.$directives[i].forEach(function(d){
 
 							d.directive.use(d.element, i, self);
 
 						});
-					}
+					};
+
+					if(self.noreactive_data[i].constructor.name === "Array") {
+
+						self.initPush(i);
+
+					};
 
 				}
 			});
+
+			if(self.noreactive_data[i].constructor.name === "Array") {
+
+				self.initPush(i);
+
+			};
 		}
 
 		else {
@@ -245,6 +270,23 @@ var D_component = (function() {
 		}
 	}
 
+	D_component.prototype.initPush = function(i) {
+
+		var self = this;
+		self.$data[i].push = function(value) {
+
+			var data = [];
+			for(var k in self.noreactive_data[i]) {
+				console.log(self.noreactive_data[i][k])
+				data.push(self.noreactive_data[i][k]);
+			}
+			data.push(value);
+			self.$data[i] = data;
+
+			self.initPush(i);
+		};
+
+	};
 
 	D_component.prototype.parseHTML = function(ignore_for) {
 
@@ -473,12 +515,14 @@ D_Directive.Create("for", function(element, prop_name, ctx) {
 	    element.removeChild(element.firstChild);
 	}
 
-	values.forEach(function(v) {
-		console.log(html)
-		element.innerHTML += html;
-		ctx.parseHTML(true);
-
-	});
+	for(var i in values) {
+		var v = values[i];
+		if(typeof v !== 'function') {
+			console.log(html)
+			element.innerHTML += html;
+			ctx.parseHTML(true);
+		}
+	};
 
 });
 
