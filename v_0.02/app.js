@@ -28,13 +28,14 @@ D.component("component_other_test", {
 		<div class=""
 			d-for="a in arr"
 			>
-			<component_tree></component_tree>
+			<component_tree
+				d-bind:test="a"></component_tree>
 			</div>
 		</div>`,
 
 	data: {
 		name: 'test2',
-		arr: ['olol2', 'eee2']
+		arr: [{name:'olol2'}, {name:'eee2'}]
 	},
 
 	methods: {
@@ -47,10 +48,10 @@ D.component("component_other_test", {
 
 D.component("component_tree", {
 
-	template: `<div class='test3_class'>asd</div>`,
+	template: `<div class='test3_class' d-text="test.name">ad</div>`,
 
 	data: {
-		
+		test:{name:'ololo'}
 	},
 
 	methods: {
