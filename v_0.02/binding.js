@@ -388,7 +388,7 @@ var D_component = (function() {
 		var arr = [];
 		$$(component_name, parent).forEach(function(element) {
 
-			if(isChild(parent, element, false)) {
+			if(isChild(parent, element, true)) {
 				var c = new D_component(component_name, element);
 				c.$root = parent_component.$root;
 				c.$parent = parent_component;
@@ -408,6 +408,7 @@ var D_component = (function() {
 			};
 
 		});
+		console.log(arr)
 
 		return arr;
 
@@ -437,7 +438,6 @@ var D = (function() {
 
 	D.Search = function() {
 		var self= this;
-		// console.log(this);
 		for(var i in components_) {
 
 			(function(component_) {
@@ -445,6 +445,7 @@ var D = (function() {
 				component_.forEach(function(c) {
 
 					var cs = D_component.Search(self.$element, c.component_name, c.data, self);
+
 					cs.forEach(function(c){
 						self.$components.push(c);
 					}); 

@@ -28,7 +28,7 @@ D.component("component_other_test", {
 		<div class=""
 			d-for="a in arr"
 			>
-			<div d-text="a"></div>
+			<component_tree></component_tree>
 			</div>
 		</div>`,
 
@@ -41,6 +41,20 @@ D.component("component_other_test", {
 		foo: function() {
 			console.log('bar2')
 		}
+	}
+
+});
+
+D.component("component_tree", {
+
+	template: `<div class='test3_class'>asd</div>`,
+
+	data: {
+		
+	},
+
+	methods: {
+		
 	}
 
 });
