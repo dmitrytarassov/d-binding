@@ -1,11 +1,14 @@
 var reg = {
+	// поиск for директивы
 	for: new RegExp("([a-zA-Z\_]+)\ in\ ([a-zA-Z\_]+)"),
+	// получение первого значения, до "[" или "."
 	first_prop: new RegExp("^[a-zA-Z\_]+"),
+	// является ли значение целым без "[" или "."
 	simple_prop: new RegExp("^[a-zA-Z\_]+$")
 }
 /**
- * [isComponent description]
- * @param  {[type]}  element [description]
+ * [isComponent ялляется ли элемент комонентом]
+ * @param  {[Node]}  element [элемент]
  * @return {Boolean}         [description]
  */
 function isComponent(element) {
@@ -14,13 +17,23 @@ function isComponent(element) {
 
 } 
 
+/**
+ * [isFor является ли элемент директивой for]
+ * @param  {[Node]}  element [элемент]
+ * @return {Boolean}         [description]
+ */
 function isFor(element) {
 
 	return element.hasAttribute("d-for");
 
 }
 
-
+/**
+ * [Rnd случайное между 2мя числами]
+ * @param {[Int]} min [минимальное]
+ * @param {[Int]} max [максимальное]
+ * @return {Boolean}         [description]
+ */
 function Rnd (min, max){
 
 	return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -28,8 +41,8 @@ function Rnd (min, max){
 }
 
 /**
- * absolutly stop event
- * @param {[type]} event [description]
+ * [Prevent полная остановка события]
+ * @param {[Event]} event [событие]
  */
 function Prevent(event) {
 	if (event.stopPropagation)    event.stopPropagation();
@@ -38,6 +51,18 @@ function Prevent(event) {
 	event.stopPropagation && event.stopPropagation();
 }
 
+/**
+ * [findParentForData найти данные по ближайшей вышестоящей директиве v-for]
+ * @param  {[Node]}  element [элемент]
+ * @return {[Bool / Object]}  
+ *                  [не найдено такой директивы]
+ *                  [
+	 *                  {
+	 *                  	{[String]} data [Содержание значения директивы]
+	 *                  	{[Node]} element [Элемент директивы]
+	 *                  }
+ *                  ]
+ */
 function findParentForData(element) {
 
 	var prew = element,
@@ -82,6 +107,14 @@ function findParentForData(element) {
 
 }
 
+/**
+ * [isChild является ли элемент дочерним для компонента]
+ * @param  {[Node]}  parent 	[элемент клмпонента]
+ * @param  {[Node]}  child      [элемент для которого осуществляется поиск]
+ * @param  {[Bool]}  ignore_for [игнорировать ли директиву for] 
+ * @param  {[Bool]}  debug      [Дебаг]
+ * @return {Boolean}
+ */
 function isChild (parent, child, ignore_for, debug) {
 
 	var el = child.parentNode;
@@ -115,10 +148,11 @@ function isChild (parent, child, ignore_for, debug) {
 };
 
 /**
- * balajs hack
- * @param  {[type]} selector [description]
- * @param  {[type]} ctx      [description]
- * @return {[type]}          [description]
+ * [$$ хак для сокращения querySelectorAll]
+ * Взять из библиотеки bala.js
+ * @param  {[String]} selector 	[Селектор]
+ * @param  {[Node]} ctx      	[Нода от которой будет выполняться поиск]
+ * @return {[Array[Node]]}    
  */
 function $$(selector, ctx) {
 
@@ -128,22 +162,50 @@ function $$(selector, ctx) {
 
 };
 
+/**
+ * Класс описывающий директивы
+ * @param  {[Sting]} name  		[имя директивы]
+ * @param  {[Function]} code 	[каллбек для директивы]
+ * для каждой найденой директивы при изменении значения 
+ * свойства компонента будет выполняться код в code
+ */
 var D_Directive = (function(name, code) {
 
+	// список директив
 	var directives = {};
+	// коллекция данных для директивы фор
+	// хранит массивы объектов 
+	// {
+	// 	element: [Node] нода директивы
+	// 	html: [String] html для повтора
+	// }
 	var for_storage = [];
 
+	/**
+	 *  Конструктор
+	 */
 	function D_Directive(name, code) {
 		this.name = "d-"+name;
 		this.code = code;
 	}
 
+	/**
+	 * [use выполнить код директивы]
+	 * @param  {[Node]} element   	[Нода директивы]
+	 * @param  {[string]} prop_name [строка с именем св-ва]
+	 * @param  {[D_Component]} ctx  [Компонент]
+	 */
 	D_Directive.prototype.use = function(element, prop_name, ctx) {
 
 		this.code(element, prop_name, ctx);
 
 	}
 
+	/**
+	 * [addToForStorage Добавить элемент и данные в хранилище директивы фор]
+	 * @param {[Node]} element 		[Элемент]
+	 * @param {[String]} html    	[html для повтора]
+	 */
 	D_Directive.addToForStorage = function(element, html) {
 		for_storage.push({
 			element: element,
@@ -151,6 +213,11 @@ var D_Directive = (function(name, code) {
 		});
 	};
 
+	/**
+	 * [getForStorage получить html для повтора для указанного элемента]
+	 * @param  {[Node]} element [Элемент]
+	 * @return {[Bool / Object]}         [description]
+	 */
 	D_Directive.getForStorage = function(element) {
 		for(var i in for_storage) {
 			var s = for_storage[i];
@@ -163,6 +230,10 @@ var D_Directive = (function(name, code) {
 		return false;
 	};
 
+	/**
+	 * [getDirectives получить список директив]
+	 * @return {[type]} [description]
+	 */
 	D_Directive.getDirectives = function() {
 		return directives;
 	}
