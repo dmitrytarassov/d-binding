@@ -45,7 +45,6 @@ D.component("component_header", {
 			console.log(this.$data.state)
 		}
 	}
-
 });
 
 D.component("component_shopping", {
@@ -60,8 +59,10 @@ D.component("component_shopping", {
 	</div>
 	<div class="buttons"
 		d-if="list.length > 0">
-		<div class="button clear_list">Очистить</div>
-		<div class="button save">Сохранить</div>
+		<div class="button clear_list"
+			d-click="clearList">Очистить</div>
+		<div class="button save"
+			d-click="Save">Сохранить</div>
 	</div>
 </div>
 	`,
@@ -71,13 +72,22 @@ D.component("component_shopping", {
 	},
 
 	methods: {
-		
+		clearList:function() {
+			this.$data.list = [];
+		},
+		Save: function() {
+			localStorage.setItem('shoppingList', JSON.stringify(this.$data.list));
+		}
 	},
 
 	created: function() {
 		this.$on("addToList", function(item) {
 			this.$data.list.push(item);
 		}, this);
+
+		if(typeof localStorage.shoppingList !== 'undefined') {
+			this.$data.list = JSON.parse(localStorage.shoppingList);
+		}
 	}
 
 });

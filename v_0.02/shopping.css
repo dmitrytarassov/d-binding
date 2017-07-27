@@ -97,6 +97,7 @@ input.new_item {
     color: #fff;
     padding: 0px 10px;
     cursor: pointer;
+    border-color: darkred;
 }
 
 .button.save {
@@ -105,6 +106,7 @@ input.new_item {
     background: darkseagreen;
     padding: 0px 10px;
     cursor: pointer;
+    border-color: green;
 }
 
 
