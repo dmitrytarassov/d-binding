@@ -86,5 +86,31 @@ input.new_item {
     color: #555;
 }
 
+.buttons {
+    float: left;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.button.clear_list {
+    background: indianred;
+    color: #fff;
+    padding: 0px 10px;
+    cursor: pointer;
+}
+
+.button.save {
+    float: right;
+    color: #fff;
+    background: darkseagreen;
+    padding: 0px 10px;
+    cursor: pointer;
+}
+
+
+
+
+
+
 
 

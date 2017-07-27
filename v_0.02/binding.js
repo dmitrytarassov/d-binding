@@ -427,7 +427,6 @@ var D_component = (function() {
 					if(!el.hasAttribute("d-path-"+d.name) && isChild(self.$element, el, ignore_for)) {
 						
 						el.setAttribute("d-path-"+d.name, "true");
-						//console.log("!")
 						var name = el.getAttribute(d.name);
 						console.log(d.name)
 
@@ -654,8 +653,32 @@ D_Directive.Create("class", function(element, prop_name, ctx) {
 
 });
 
+D_Directive.Create("if", function(element, prop_name, ctx) {
+
+	var expression = false,
+		value,
+		display = "none";
+
+	if(reg.simple_prop.test(prop_name)) {
+		expression = element.getAttribute("d-if");
+	}
+	else {
+		expression = prop_name;
+	}
+
+	value = ctx.getValue(expression);
+	if(value) {
+		display = "block";
+	}
+
+	console.log("!!!!!!!!!!", display)
+	window.e = element;
+	element.style.display = display;
+
+});
+
 D_Directive.Create("click", function(element, prop_name, ctx) {
-	console.log(element)
+
 	element.addEventListener("click", function(e) {
 
 		if(typeof ctx.methods[prop_name] === 'function') {
@@ -677,6 +700,19 @@ D_Directive.Create("model", function(element, prop_name, ctx) {
 			ctx.$data[prop_name] = element.value;
 		}
 	}
+
+});
+
+D_Directive.Create("enter", function(element, prop_name, ctx) {
+
+	element.addEventListener("keydown", function(e) {
+		if(e.key==="Enter") {
+			if(typeof ctx.methods[prop_name] === 'function') {
+				ctx.methods[prop_name].call(ctx, e);
+				Prevent(e);
+			};
+		};
+	});
 
 });
 

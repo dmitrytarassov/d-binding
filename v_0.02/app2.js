@@ -3,7 +3,9 @@ D.component("component_header", {
 	template: `
 <div class="header">
 	<div class="input_container">
-		<input type="text" class="new_item" placeholder="Название товара" d-model="name"/>
+		<input type="text" class="new_item" placeholder="Название товара" 
+			d-model="name"
+			d-enter="addToList"/>
 		<div class="clear"
 			d-click="clear">&#x2716;</div>
 	</div>
@@ -55,6 +57,11 @@ D.component("component_shopping", {
 		<div class="list_element">
 			<span d-text="e"></span>
 		</div>
+	</div>
+	<div class="buttons"
+		d-if="list.length > 0">
+		<div class="button clear_list">Очистить</div>
+		<div class="button save">Сохранить</div>
 	</div>
 </div>
 	`,
