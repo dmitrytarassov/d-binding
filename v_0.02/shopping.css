@@ -78,5 +78,13 @@ input.new_item {
 }
 
 
+.list_element {
+    float: left;
+    position: relative;
+    width: 100%;
+    margin-top: 10px;
+    color: #555;
+}
+
 
 

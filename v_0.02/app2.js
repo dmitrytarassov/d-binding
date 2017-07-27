@@ -24,7 +24,8 @@ D.component("component_header", {
 		},
 		addToList: function() {
 			if(this.$data.state) {
-				this.$parent.$emit("addToList", this.$data.$name);
+				this.$parent.$emit("addToList", this.$data.name);
+				this.$data.name = "";
 			}
 		}
 	}, 
@@ -50,6 +51,11 @@ D.component("component_shopping", {
 	template: `
 <div class="shopping">
 	<component_header></component_header>
+	<div class="" d-for="e in list">
+		<div class="list_element">
+			<span d-text="e"></span>
+		</div>
+	</div>
 </div>
 	`,
 
@@ -62,8 +68,8 @@ D.component("component_shopping", {
 	},
 
 	created: function() {
-		this.$on("addToList", function() {
-			console.log(this)
+		this.$on("addToList", function(item) {
+			this.$data.list.push(item);
 		}, this);
 	}
 

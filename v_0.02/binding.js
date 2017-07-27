@@ -286,6 +286,7 @@ var D_component = (function() {
 	D_component.prototype.$emit = function(event_name, data) {
 		if(typeof this.$listen[event_name]!=='undefined') {
 			this.$listen[event_name].forEach(function(code) {
+				console.log(data)
 				code.code.call(code.ctx, data);
 			});
 		}
@@ -428,7 +429,7 @@ var D_component = (function() {
 						el.setAttribute("d-path-"+d.name, "true");
 						//console.log("!")
 						var name = el.getAttribute(d.name);
-						//console.log(name)
+						console.log(d.name)
 
 						var prop = self.getConcreteProp(name);
 						//console.log(prop)
@@ -467,6 +468,7 @@ var D_component = (function() {
 			console.log(prop.match(reg.class_VALUE_IF_PROP_match)[2])
 			return prop.match(reg.class_VALUE_IF_PROP_match)[2];
 		}
+		console.log(prop)
 		return prop.match(reg.first_prop)[0];
 	}
 
@@ -514,8 +516,11 @@ var D_component = (function() {
 		var arr = [];
 		//console.log(arguments)
 		$$(component_name, parent).forEach(function(element) {
-
+			if(element.hasAttribute("d-component-init")) {
+				return false;
+			}
 			if(isChild(parent, element, true)) {
+				element.setAttribute("d-component-init", true);
 				var c = new D_component(component_name, element);
 				c.$root = parent_component.$root;
 				c.$parent = parent_component;
