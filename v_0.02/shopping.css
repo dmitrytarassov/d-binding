@@ -81,9 +81,26 @@ input.new_item {
 .list_element {
     float: left;
     position: relative;
-    width: 100%;
     margin-top: 10px;
     color: #555;
+    margin-right: 10px;
+    background: #fff;
+    line-height: 14px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    border: 1px solid #aaa;
+}
+
+.list_element p {
+    float: left;
+    width: 100%;
+    margin: 0px;
+}
+
+.buttons {
+    float: left;
+    width: 100%;
+    margin-top: 10px;
 }
 
 .buttons {
@@ -109,8 +126,22 @@ input.new_item {
     border-color: green;
 }
 
+.list_element span.rm {
+    margin-left: 10px;
+    cursor: pointer;
+}
 
-
+.notification {
+    float: left;
+    width: 100%;
+    line-height: 14px;
+    padding: 10px 20px;
+    margin-top: 10px;
+    background: mediumseagreen;
+    box-sizing: border-box;
+    color: #fff;
+    border-radius: 3px;
+}
 
 
 

@@ -52,11 +52,13 @@ D.component("component_shopping", {
 	template: `
 <div class="shopping">
 	<component_header></component_header>
-	<div class="" d-for="e in list">
+	<div class="" d-for="(k, e) in list">
 		<div class="list_element">
 			<span d-text="e"></span>
+			<span class="rm" d-click="removeFromList(k)">&#x2716;</span>
 		</div>
 	</div>
+	<div class="notification" d-if="notification">У вас есть несохраненные данные, не забудьте сохранить!</div>
 	<div class="buttons"
 		d-if="list.length > 0">
 		<div class="button clear_list"
@@ -68,7 +70,9 @@ D.component("component_shopping", {
 	`,
 
 	data: {
-		list: []
+		list: [],
+		memory_list: null,
+		notification: false
 	},
 
 	methods: {
@@ -77,6 +81,32 @@ D.component("component_shopping", {
 		},
 		Save: function() {
 			localStorage.setItem('shoppingList', JSON.stringify(this.$data.list));
+			this.$data.memory_list = localStorage.shoppingList;
+			this.$methods.checkNotification();
+		},
+		removeFromList:function(key) {
+			this.$data.list.delete(key);
+		},
+		checkNotification: function() {
+			console.log(this.$data.memory_list)
+			if(JSON.stringify(this.$data.list)!==this.$data.memory_list) {
+				console.warn(typeof localStorage.shoppingList === 'undefined')
+				if(typeof localStorage.shoppingList === 'undefined' && JSON.stringify(this.$data.list)==="[]") {
+					this.$data.notification = false;
+				}
+				else {
+					this.$data.notification = true;
+				}
+			}
+			else {
+				this.$data.notification = false;
+			}
+		}
+	},
+
+	watch: {
+		list: function() {
+			this.$methods.checkNotification();
 		}
 	},
 
@@ -86,6 +116,7 @@ D.component("component_shopping", {
 		}, this);
 
 		if(typeof localStorage.shoppingList !== 'undefined') {
+			this.$data.memory_list = localStorage.shoppingList;
 			this.$data.list = JSON.parse(localStorage.shoppingList);
 		}
 	}

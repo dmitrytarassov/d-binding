@@ -1,6 +1,10 @@
 var reg = {
 	// поиск for директивы
 	for: new RegExp("([a-zA-Z\_]+)\ in\ ([a-zA-Z\_]+)"),
+	//
+	for_KEY_VALUE_test: new RegExp("[\(]{1}[a-zA-Z\_]+\,[\ ]?[a-zA-Z\_]+\[\)]{1} in\ [a-zA-Z\_]+"),
+	//
+	for_KEY_VALUE_match: new RegExp("[\(]{1}([a-zA-Z\_]+)\,[\ ]?([a-zA-Z\_]+)\[\)]{1} in\ ([a-zA-Z\_]+)"),
 	// получение первого значения, до "[" или "."
 	first_prop: new RegExp("^[a-zA-Z\_]+"),
 	// является ли значение целым без "[" или "."
@@ -8,7 +12,13 @@ var reg = {
 	//
 	class_VALUE_IF_PROP_test: new RegExp("^[a-zA-Z\_\-]+\ if\ [a-zA-Z\_]+$"),
 	//
-	class_VALUE_IF_PROP_match: new RegExp("^([a-zA-Z\_\-]+) if ([a-zA-Z\_]+)")
+	class_VALUE_IF_PROP_match: new RegExp("^([a-zA-Z\_\-]+) if ([a-zA-Z\_]+)"),
+	//
+	function_NAME: new RegExp("^[a-zA-Z\_]+$"),
+	//
+	function_NAME_ARGS_test:new RegExp("^[a-zA-Z\_]+[\(]{1}[a-zA-Z\.\,\_\ ]*[\)]{1}"),
+	//
+	function_NAME_ARGS_match:new RegExp("^([a-zA-Z\_]+)[\(]{1}([a-zA-Z\.\,\_\ ]*)[\)]{1}"),
 }
 /**
  * [isComponent ялляется ли элемент комонентом]
@@ -58,6 +68,8 @@ function Prevent(event) {
 /**
  * [findParentForData найти данные по ближайшей вышестоящей директиве v-for]
  * @param  {[Node]}  element [элемент]
+ * @param  {[D_Component]} ctx [context]
+ * @prarm  {[String]} prop_name [name of prop]
  * @return {[Bool / Object]}  
  *                  [не найдено такой директивы]
  *                  [
@@ -67,12 +79,13 @@ function Prevent(event) {
 	 *                  }
  *                  ]
  */
-function findParentForData(element) {
+function findParentForData(element, ctx, prop_name) {
 
 	var prew = element,
 		parent = element.parentNode,
 		is_comp = false,
-		is_for = false;
+		is_for = false,
+		m = null;
 
 
 	do {
@@ -93,7 +106,22 @@ function findParentForData(element) {
 				var el = parent.children[i];
 				if(typeof el.nodeType!=='undefined') {
 					if(el.isSameNode(prew)) {
-						ret = parent.getAttribute('d-for').match(reg.for)[2]+"["+a+"]";
+						var attr = parent.getAttribute('d-for');
+
+						if(reg.for.test(attr)) {
+							ret = attr.match(reg.for)[2]+"["+a+"]";
+						}
+						else if (reg.for_KEY_VALUE_test.test(attr)) {
+							var matches = attr.match(reg.for_KEY_VALUE_match);
+							console.log()
+							if(matches[1]===prop_name) {
+								ret = a;
+							}
+							else {
+								ret = matches[3]+"["+a+"]";
+								m = a;
+							}
+						}
 					}
 
 					a++;
@@ -103,7 +131,8 @@ function findParentForData(element) {
 
 			return {
 				data:ret,
-				element:parent
+				element:parent,
+				key: m
 			};
 
 		}
@@ -263,7 +292,7 @@ var D_component = (function() {
 		this.component_name = this.tag_name = component_name;
 		this.$element = element;
 		this.$data = {};
-		this.methods = {};
+		this.$methods = {};
 		this.noreactive_data = {};
 		this.$components = [];
 		this.$directives = {};
@@ -304,8 +333,8 @@ var D_component = (function() {
 			})(i);
 		};
 
-		for(var i in data.methods) {
-			this.methods[i] = data.methods[i];
+		for(var m in data.methods) {
+			this.$methods[m] = data.methods[m].bind(self);
 		};
 
 		for(var i in data.watch) {
@@ -324,7 +353,7 @@ var D_component = (function() {
 	D_component.prototype.setProp = function(i, value) {
 
 		var self = this;
-
+		console.error(self.$data[i], i)
 		if(typeof self.$data[i]==='undefined') {
 			self.noreactive_data[i] = value;
 
@@ -333,7 +362,7 @@ var D_component = (function() {
 					return self.noreactive_data[i];
 				},
 				set: function(v) {
-					if(self.noreactive_data[i].constructor.name === "Array") {
+					if(self.noreactive_data[i] && self.noreactive_data[i].constructor && self.noreactive_data[i].constructor.name === "Array") {
 						self.noreactive_data[i] = [];
 
 						for(var j in v) {
@@ -363,7 +392,7 @@ var D_component = (function() {
 						self.$watch[i].call(self);
 					}
 
-					if(self.noreactive_data[i].constructor.name === "Array") {
+					if(self.noreactive_data[i] && self.noreactive_data[i].constructor && self.noreactive_data[i].constructor.name === "Array") {
 
 						self.initPush(i);
 
@@ -372,7 +401,7 @@ var D_component = (function() {
 				}
 			});
 
-			if(self.noreactive_data[i].constructor.name === "Array") {
+			if(self.noreactive_data[i] && self.noreactive_data[i].constructor && self.noreactive_data[i].constructor.name === "Array") {
 
 				self.initPush(i);
 
@@ -401,6 +430,20 @@ var D_component = (function() {
 			self.$data[i] = data;
 
 			self.initPush(i);
+		};
+
+		self.$data[i].delete = function(key) {
+			var arr = [];
+			for(var k in self.noreactive_data[i]) {
+				if(k.valueOf()!=key.valueOf()) {
+					console.error(k);
+					console.error(key);
+					console.warn(key==key)
+					arr.push(self.noreactive_data[i][k]);
+				};
+			};
+
+			self.$data[i] = arr;
 		};
 
 	};
@@ -462,12 +505,14 @@ var D_component = (function() {
 	D_component.prototype.getConcreteProp = function(prop) {
 		if(reg.for.test(prop)) {
 			return prop.match(reg.for)[2];
-		}
+		};
 		if(reg.class_VALUE_IF_PROP_test.test(prop)) {
 			console.log(prop.match(reg.class_VALUE_IF_PROP_match)[2])
 			return prop.match(reg.class_VALUE_IF_PROP_match)[2];
-		}
-		console.log(prop)
+		};
+		if(prop, reg.for_KEY_VALUE_test.test(prop)) {
+			return prop.match(reg.for_KEY_VALUE_match)[3];
+		};
 		return prop.match(reg.first_prop)[0];
 	}
 
@@ -475,10 +520,13 @@ var D_component = (function() {
 
 		var value = "";
 
-		if(reg.simple_prop.test(prop_name)) {
+		if(reg.simple_prop.test(prop_name) && typeof this.$data[prop_name]!=='undefined') {
 			value = this.$data[prop_name];
 		}
 		else {
+			if(typeof prop_name==="number") {
+				return prop_name;
+			}
 			var rnd = Rnd(1000,9999)
 			, str = "return d_"+rnd+"."+prop_name;
 			;
@@ -493,7 +541,8 @@ var D_component = (function() {
 		};
 
 		if(typeof element!=='undefined') {
-			var data = findParentForData(element);
+			var data = findParentForData(element, this, prop_name);
+			console.warn(prop_name,data)
 			//console.log("!")
 			//console.log(data)
 			if(data) {
@@ -679,11 +728,30 @@ D_Directive.Create("if", function(element, prop_name, ctx) {
 
 D_Directive.Create("click", function(element, prop_name, ctx) {
 
+	var attr = element.getAttribute("d-click")
 	element.addEventListener("click", function(e) {
+		
+		Prevent(e);
 
-		if(typeof ctx.methods[prop_name] === 'function') {
-			ctx.methods[prop_name].call(ctx, e);
-			Prevent(e);
+		if(reg.function_NAME.test(attr)) {
+			if(typeof ctx.$methods[attr] === 'function') {
+				ctx.$methods[attr].call(ctx, e);
+			}
+		}
+		else if(reg.function_NAME_ARGS_test.test(attr)) {
+			var matches = attr.match(reg.function_NAME_ARGS_match);
+			var func_name = matches[1];
+			var values = matches[2].split(",").map(function(e) {
+				return e.toString().trim()
+			});
+			var arr = [];
+			for (var i in values) {
+				arr.push(ctx.getValue(values[i], element));
+			};
+
+			if(typeof ctx.$methods[func_name] === 'function') {
+				ctx.$methods[func_name].apply(ctx, arr);
+			}
 		}
 
 	});
@@ -707,8 +775,8 @@ D_Directive.Create("enter", function(element, prop_name, ctx) {
 
 	element.addEventListener("keydown", function(e) {
 		if(e.key==="Enter") {
-			if(typeof ctx.methods[prop_name] === 'function') {
-				ctx.methods[prop_name].call(ctx, e);
+			if(typeof ctx.$methods[prop_name] === 'function') {
+				ctx.$methods[prop_name].call(ctx, e);
 				Prevent(e);
 			};
 		};
@@ -735,19 +803,26 @@ D_Directive.Create("for", function(element, prop_name, ctx) {
 		prop_name = "i in "+prop_name;
 	}
 
-	console.log(html)
-	
-	var props = prop_name.match(reg.for);
-	var prop = props[2];
+	// console.log(html)
+	// console.log(element.getAttribute("d-for"))
+	// console.error(findParentForData(element, ctx, element.getAttribute("d-for")))
+	var attr = element.getAttribute("d-for");
+	var prop;
+	if(reg.for.test(attr)) {
+		prop = attr.match(reg.for)[2];
+	}
+	else if (reg.for_KEY_VALUE_test.test(attr)) {
+		var matches = attr.match(reg.for_KEY_VALUE_match);
+		prop = matches[3];
+	}
+	// var props = prop_name.match(reg.for);
+	// var prop = props[2];
 	var values = ctx.getValue(prop);
-	
-
-	console.log(values)
 
 	for(var i in values) {
 		var v = values[i];
 		if(typeof v !== 'function') {
-			console.log(html)
+
 			element.innerHTML += html;
 			//D.Search.call(ctx);
 		};
