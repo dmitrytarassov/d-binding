@@ -656,7 +656,7 @@ var D = (function() {
 
 D_Directive.Create("text", function(element, prop_name, ctx) {
 
-	var value = ctx.getValue(prop_name, element);
+	var value = ctx.getValue(element.getAttribute("d-text"), element);
 	element.innerHTML = value;
 
 });
