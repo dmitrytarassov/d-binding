@@ -10,9 +10,9 @@ var reg = {
 	// является ли значение целым без "[" или "."
 	simple_prop: new RegExp("^[a-zA-Z\_]+$"),
 	//
-	class_VALUE_IF_PROP_test: new RegExp("^[a-zA-Z\_\-]+\ if\ [a-zA-Z\_]+$"),
+	class_VALUE_IF_PROP_test: new RegExp("^[a-zA-Z\_\-]+\ if\ [a-zA-Z\_\.]+$"),
 	//
-	class_VALUE_IF_PROP_match: new RegExp("^([a-zA-Z\_\-]+) if ([a-zA-Z\_]+)"),
+	class_VALUE_IF_PROP_match: new RegExp("^([a-zA-Z\_\-]+) if ([a-zA-Z\_\.]+)"),
 	//
 	function_NAME: new RegExp("^[a-zA-Z\_]+$"),
 	//
@@ -532,6 +532,7 @@ var D_component = (function() {
 			;
 
 			window["d_"+rnd] = this.$data;
+			console.error(str)
 			value = Function(str)();
 			delete window["d_"+rnd];
 		}
@@ -665,18 +666,20 @@ D_Directive.Create("class", function(element, prop_name, ctx) {
 
 	var expression = false,
 		value,
-		class_name;
+		class_name,
+		prop = element.getAttribute('d-class');
 
-	if(reg.simple_prop.test(prop_name)) {
-		expression = prop_name;
-		class_name = element.getAttribute("d-class").match(reg.class_VALUE_IF_PROP_match)[1];
-
-	}
-	else if(reg.class_VALUE_IF_PROP_test.test(prop_name)) {
-		var matches = prop_name.match(reg.class_VALUE_IF_PROP_match);
+	if(reg.class_VALUE_IF_PROP_test.test(prop)) {
+		var matches = prop.match(reg.class_VALUE_IF_PROP_match);
 		expression = matches[2];
 		class_name = matches[1];
 	}
+	else {
+		expression = prop;
+		class_name = ctx.getValue(expression);
+
+	}
+	 
 
 	if(expression) {
 		var has = false;
