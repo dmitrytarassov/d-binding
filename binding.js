@@ -619,6 +619,8 @@ var D = (function() {
 
 	};
 
+	D.version = 0.1;
+
 	D.Search = function() {
 		var self = this;
 		for(var i in components_) {
