@@ -113,7 +113,6 @@ function findParentForData(element, ctx, prop_name) {
 						}
 						else if (reg.for_KEY_VALUE_test.test(attr)) {
 							var matches = attr.match(reg.for_KEY_VALUE_match);
-							console.log()
 							if(matches[1]===prop_name) {
 								ret = a;
 							}
@@ -352,7 +351,7 @@ var D_component = (function() {
 	D_component.prototype.setProp = function(i, value) {
 
 		var self = this;
-		console.error(self.$data[i], i)
+		//console.error(self.$data[i], i)
 		if(typeof self.$data[i]==='undefined') {
 			self.noreactive_data[i] = value;
 
@@ -435,9 +434,9 @@ var D_component = (function() {
 			var arr = [];
 			for(var k in self.noreactive_data[i]) {
 				if(k.valueOf()!=key.valueOf()) {
-					console.error(k);
-					console.error(key);
-					console.warn(key==key)
+					// console.error(k);
+					// console.error(key);
+					// console.warn(key==key)
 					arr.push(self.noreactive_data[i][k]);
 				};
 			};
@@ -464,30 +463,35 @@ var D_component = (function() {
 				var tag = "["+d.name+"]"
 					, elements = $$(tag, self.$element);
 
+				//console.warn(elements)
+				//elements.push(self.$element);
 				elements.forEach(function(el) {
 
 					if(!el.hasAttribute("d-path-"+d.name) && isChild(self.$element, el, ignore_for)) {
 						
-						el.setAttribute("d-path-"+d.name, "true");
-						var name = el.getAttribute(d.name);
-						console.log(d.name)
+						if(el.hasAttribute(d.name)) {
+							
+							el.setAttribute("d-path-"+d.name, "true");
+							var name = el.getAttribute(d.name);
+							//console.log(d.name)
 
-						var prop = self.getConcreteProp(name);
-						//console.log(prop)
-						d.use(el, prop, self);
+							var prop = self.getConcreteProp(name);
+							//console.log(prop)
+							d.use(el, prop, self);
 
-						if(typeof self.$directives[prop]==='undefined') {
-							self.$directives[prop] = [];
+							if(typeof self.$directives[prop]==='undefined') {
+								self.$directives[prop] = [];
+							}
+
+							var obj = {
+								element: el,
+								directive: d,
+								prop: name
+							};
+
+
+							self.$directives[prop].push(obj);
 						}
-
-						var obj = {
-							element: el,
-							directive: d,
-							prop: name
-						};
-
-
-						self.$directives[prop].push(obj);
 
 					};
 
@@ -531,7 +535,7 @@ var D_component = (function() {
 			;
 
 			window["d_"+rnd] = this.$data;
-			console.error(str)
+			//console.error(str)
 			value = Function(str)();
 			delete window["d_"+rnd];
 		}
@@ -542,7 +546,7 @@ var D_component = (function() {
 
 		if(typeof element!=='undefined') {
 			var data = findParentForData(element, this, prop_name);
-			console.warn(prop_name,data)
+			//console.warn(prop_name,data)
 			//console.log("!")
 			//console.log(data)
 			if(data) {
@@ -614,10 +618,16 @@ var D = (function() {
 		this.$root = this;
 		this.$parent = this;
 		this.$components = [];
+		this.$listen = {};
 
 		D.Search.call(this);
 
 	};
+
+	var F = function() {};
+	F.prototype = D_component.prototype;
+	D.prototype = new F();
+	D.prototype.constructor = D;
 
 	D.version = 0.1;
 
@@ -661,6 +671,13 @@ D_Directive.Create("text", function(element, prop_name, ctx) {
 
 	var value = ctx.getValue(element.getAttribute("d-text"), element);
 	element.innerHTML = value;
+
+});
+
+D_Directive.Create("src", function(element, prop_name, ctx) {
+
+	var value = ctx.getValue(prop_name, element);
+	element.src = value;
 
 });
 
@@ -832,7 +849,7 @@ D_Directive.Create("for", function(element, prop_name, ctx) {
 			//D.Search.call(ctx);
 		};
 	};
-	console.log(element.innerHTML)
+	//console.log(element.innerHTML)
 	ctx.parseHTML(true);
 
 });
