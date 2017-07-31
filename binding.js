@@ -315,7 +315,6 @@ var D_component = (function() {
 	D_component.prototype.$emit = function(event_name, data) {
 		if(typeof this.$listen[event_name]!=='undefined') {
 			this.$listen[event_name].forEach(function(code) {
-				console.log(data)
 				code.code.call(code.ctx, data);
 			});
 		}
@@ -564,7 +563,8 @@ var D_component = (function() {
 	D_component.Search = function(parent, component_name, data, parent_component) {
 		var arr = [];
 		//console.log(arguments)
-		$$(component_name, parent).forEach(function(element) {
+		var c = component_name+", [d-is='"+component_name+"']"+", [d-component='"+component_name+"']"
+		$$(c, parent).forEach(function(element) {
 			if(element.hasAttribute("d-component-init")) {
 				return false;
 			}
