@@ -358,6 +358,7 @@ var D_component = (function() {
 			self.noreactive_data[i] = value;
 
 			Object.defineProperty(self.$data, i, {
+				enumerable: true,
 				get: function() {
 					return self.noreactive_data[i];
 				},
@@ -532,14 +533,24 @@ var D_component = (function() {
 			if(typeof prop_name==="number") {
 				return prop_name;
 			}
-			var rnd = Rnd(1000,9999)
-			, str = "return d_"+rnd+"."+prop_name;
-			;
 
-			window["d_"+rnd] = this.$data;
-			//console.error(str)
-			value = Function(str)();
-			delete window["d_"+rnd];
+			var str,
+				args = [],
+				send_args = [],
+				args_str,
+				prefix = "d_"+Rnd(100,999)+"_";
+
+			for(var i in this.$data) {
+				args.push(prefix+i);
+				send_args.push(this.$data[i]);
+			};
+
+			args_str = args.join(",");
+
+			var expression = "return typeof "+prefix+prop_name+"!=='undefined'? "+prefix+prop_name+": void 0;";
+			var foo = new Function(args_str, expression);
+
+			value = foo.apply(this, send_args);
 		}
 
 		if(typeof value!=='undefined') {
