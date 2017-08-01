@@ -198,6 +198,8 @@ function $$(selector, ctx) {
 
 };
 
+Element.prototype.on = Element.prototype.addEventListener;
+
 /**
  * Класс описывающий директивы
  * @param  {[Sting]} name  		[имя директивы]
@@ -751,7 +753,7 @@ D_Directive.Create("if", function(element, prop_name, ctx) {
 D_Directive.Create("click", function(element, prop_name, ctx) {
 
 	var attr = element.getAttribute("d-click")
-	element.addEventListener("click", function(e) {
+	element.on("click", function(e) {
 		
 		Prevent(e);
 
@@ -795,7 +797,7 @@ D_Directive.Create("model", function(element, prop_name, ctx) {
 
 D_Directive.Create("enter", function(element, prop_name, ctx) {
 
-	element.addEventListener("keydown", function(e) {
+	element.on("keydown", function(e) {
 		if(e.key==="Enter") {
 			if(typeof ctx.$methods[prop_name] === 'function') {
 				ctx.$methods[prop_name].call(ctx, e);
