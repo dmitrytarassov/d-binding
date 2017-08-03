@@ -32,6 +32,19 @@ function isComponent(element) {
 } 
 
 /**
+ * наследование по Закасу
+ * паттерн InheritPrototype
+ * @param {[type]} parent [description]
+ * @param {[type]} child  [description]
+ */
+function InheritPrototype(parent, child) {
+	var F = function() {};
+	F.prototype = parent.prototype;
+	child.prototype = new F();
+	child.prototype.constructor = child;
+}
+
+/**
  * [isFor является ли элемент директивой for]
  * @param  {[Node]}  element [элемент]
  * @return {Boolean}         [description]
@@ -637,11 +650,6 @@ var D = (function() {
 
 	};
 
-	var F = function() {};
-	F.prototype = D_component.prototype;
-	D.prototype = new F();
-	D.prototype.constructor = D;
-
 	D.version = 0.1;
 
 	D.Search = function() {
@@ -679,6 +687,8 @@ var D = (function() {
 	return D;
 
 })();
+
+InheritPrototype(D_component, D);
 
 D_Directive.Create("text", function(element, prop_name, ctx) {
 
