@@ -19,6 +19,8 @@ var reg = {
 	function_NAME_ARGS_test:new RegExp("^[a-zA-Z\_]+[\(]{1}[a-zA-Z\.\,\_\ ]*[\)]{1}"),
 	//
 	function_NAME_ARGS_match:new RegExp("^([a-zA-Z\_]+)[\(]{1}([a-zA-Z\.\,\_\ ]*)[\)]{1}"),
+	//
+	mustache_test:new RegExp("^({{\ )([\d\a-zA-Z\.\-]*)(\ }})$")
 }
 /**
  * [isComponent ялляется ли элемент комонентом]
@@ -113,8 +115,8 @@ function findParentForData(element, ctx, prop_name) {
 
 			var a = 0;
 			var ret = false;
-			//console.log("!!!!!!!!!!!!")
-			//console.log(parent.children)
+			////console.log("!!!!!!!!!!!!")
+			////console.log(parent.children)
 			for(var i in parent.children) {
 				var el = parent.children[i];
 				if(typeof el.nodeType!=='undefined') {
@@ -214,6 +216,32 @@ function $$(selector, ctx) {
 Element.prototype.on = Element.prototype.addEventListener;
 
 /**
+ * [getTextNodesIn description] - get all text nodes
+ * @param  {[type]} node                   [description]
+ * @param  {[type]} includeWhitespaceNodes [description]
+ * @return {[type]}                        [description]
+ */
+function getTextNodesIn(node, includeWhitespaceNodes) {
+    var textNodes = [], nonWhitespaceMatcher = /\S/;
+
+    function getTextNodes(node) {
+        if (node.nodeType == 3) {
+            if (includeWhitespaceNodes || nonWhitespaceMatcher.test(node.nodeValue)) {
+                textNodes.push(node);
+            }
+        } else {
+            for (var i = 0, len = node.childNodes.length; i < len; ++i) {
+                getTextNodes(node.childNodes[i]);
+            }
+        }
+    }
+
+    getTextNodes(node);
+    return textNodes;
+}
+
+
+/**
  * Класс описывающий директивы
  * @param  {[Sting]} name  		[имя директивы]
  * @param  {[Function]} code 	[каллбек для директивы]
@@ -273,7 +301,7 @@ var D_Directive = (function(name, code) {
 		for(var i in for_storage) {
 			var s = for_storage[i];
 			if(element.isSameNode(s.element)) {
-				//console.log(s.html)
+				////console.log(s.html)
 				return s.html;
 			};
 		};
@@ -359,6 +387,14 @@ var D_component = (function() {
 		}
 
 		this.$element.innerHTML = data.template;
+
+		getTextNodesIn(this.$element).forEach(function(node) {
+			var matches = reg.mustache_test.test(node.textContent);
+			if (matches) {
+				node.parentNode.setAttribute("d-text", matches[2])
+			}
+		});
+
 		this.parseHTML();
 
 	};
@@ -388,15 +424,15 @@ var D_component = (function() {
 						}
 					}
 					else {
-						//console.log(i, v)
+						////console.log(i, v)
 						self.noreactive_data[i] = v;
 					}
 
 					if(typeof self.$directives[i]!=='undefined') {
 						self.$directives[i].forEach(function(d){
+							////console.log(d)
+							//console.log("use in set")
 							//console.log(d)
-							console.log("use in set")
-							console.log(d)
 							d.directive.use(d.element, d.prop, self);
 
 						});
@@ -424,7 +460,7 @@ var D_component = (function() {
 
 		else {
 
-			//console.log(i, value)
+			////console.log(i, value)
 			self.$data[i] = value;
 
 		}
@@ -437,7 +473,7 @@ var D_component = (function() {
 
 			var data = [];
 			for(var k in self.noreactive_data[i]) {
-				//console.log(self.noreactive_data[i][k])
+				////console.log(self.noreactive_data[i][k])
 				data.push(self.noreactive_data[i][k]);
 			}
 			data.push(value);
@@ -489,10 +525,10 @@ var D_component = (function() {
 							
 							el.setAttribute("d-path-"+d.name, "true");
 							var name = el.getAttribute(d.name);
-							//console.log(d.name)
+							////console.log(d.name)
 
 							var prop = self.getConcreteProp(name);
-							//console.log(prop)
+							////console.log(prop)
 							d.use(el, prop, self);
 
 							if(typeof self.$directives[prop]==='undefined') {
@@ -526,7 +562,7 @@ var D_component = (function() {
 			return prop.match(reg.for)[2];
 		};
 		if(reg.class_VALUE_IF_PROP_test.test(prop)) {
-			console.log(prop.match(reg.class_VALUE_IF_PROP_match)[2])
+			//console.log(prop.match(reg.class_VALUE_IF_PROP_match)[2])
 			return prop.match(reg.class_VALUE_IF_PROP_match)[2];
 		};
 		if(prop, reg.for_KEY_VALUE_test.test(prop)) {
@@ -573,8 +609,8 @@ var D_component = (function() {
 		if(typeof element!=='undefined') {
 			var data = findParentForData(element, this, prop_name);
 			//console.warn(prop_name,data)
-			//console.log("!")
-			//console.log(data)
+			////console.log("!")
+			////console.log(data)
 			if(data) {
 				return this.getValue(data.data, data.element);
 			}
@@ -592,7 +628,7 @@ var D_component = (function() {
 	 */
 	D_component.Search = function(parent, component_name, data, parent_component) {
 		var arr = [];
-		//console.log(arguments)
+		////console.log(arguments)
 		var c = component_name+", [d-is='"+component_name+"']"+", [d-component='"+component_name+"']"
 		$$(c, parent).forEach(function(element) {
 			if(element.hasAttribute("d-component-init")) {
@@ -609,9 +645,9 @@ var D_component = (function() {
 					var attr = element.attributes[a];
 					if((new RegExp("d-bind:[a-zA-Z\_\-]+")).test(attr.nodeName)) {
 						var attr_name = attr.nodeName.substring(7, attr.nodeName.length);
-						//console.log(element.getAttribute(attr.nodeName))
+						////console.log(element.getAttribute(attr.nodeName))
 						var val = parent_component.getValue(element.getAttribute(attr.nodeName), element);
-						// console.log(attr_name, val);
+						// //console.log(attr_name, val);
 						c.setProp(attr_name, val);
 					}
 				}
@@ -620,8 +656,8 @@ var D_component = (function() {
 			};
 
 		});
-		//console.log("!")
-		//console.log(arr)
+		////console.log("!")
+		////console.log(arr)
 
 		return arr;
 
@@ -732,7 +768,7 @@ D_Directive.Create("class", function(element, prop_name, ctx) {
 			has = true;
 		}
 
-		console.log(value, has, class_name)
+		//console.log(value, has, class_name)
 
 		if(value && !has) {
 			element.classList.add(class_name);
@@ -742,8 +778,8 @@ D_Directive.Create("class", function(element, prop_name, ctx) {
 		}
 	};
 
-	//console.log(prop_name)
-	//console.log(ctx.getValue(prop))
+	////console.log(prop_name)
+	////console.log(ctx.getValue(prop))
 
 });
 
@@ -765,7 +801,7 @@ D_Directive.Create("if", function(element, prop_name, ctx) {
 		display = "block";
 	}
 
-	console.log("!!!!!!!!!!", display)
+	//console.log("!!!!!!!!!!", display)
 	window.e = element;
 	element.style.display = display;
 
@@ -833,13 +869,13 @@ D_Directive.Create("for", function(element, prop_name, ctx) {
 
 	var html = D_Directive.getForStorage(element);
 	if(!html) {
-		//console.log(html)
+		////console.log(html)
 		var html = element.innerHTML;
 		D_Directive.addToForStorage(element, html);
 	};
 
 	element.innerHTML = "";
-	console.log("!")
+	//console.log("!")
 	while (element.firstChild) {
 	    element.removeChild(element.firstChild);
 	}
@@ -848,8 +884,8 @@ D_Directive.Create("for", function(element, prop_name, ctx) {
 		prop_name = "i in "+prop_name;
 	}
 
-	// console.log(html)
-	// console.log(element.getAttribute("d-for"))
+	// //console.log(html)
+	// //console.log(element.getAttribute("d-for"))
 	// console.error(findParentForData(element, ctx, element.getAttribute("d-for")))
 	var attr = element.getAttribute("d-for");
 	var prop;
@@ -872,7 +908,7 @@ D_Directive.Create("for", function(element, prop_name, ctx) {
 			//D.Search.call(ctx);
 		};
 	};
-	//console.log(element.innerHTML)
+	////console.log(element.innerHTML)
 	ctx.parseHTML(true);
 
 });

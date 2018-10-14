@@ -54,7 +54,7 @@ D.component("component_shopping", {
 	<component_header></component_header>
 	<div class="" d-for="(k, e) in list">
 		<div class="list_element">
-			<span d-text="e"></span>
+			<span>{{ e }}</span>
 			<span class="rm" d-click="removeFromList(k)">&#x2716;</span>
 		</div>
 	</div>
